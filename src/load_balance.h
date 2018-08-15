@@ -435,7 +435,8 @@ void bt_load_balance(std::vector<Work_Packet> &work,
           // likely
           // to travel farther and thus require more memory)
           n_send_census = 0;
-          if (temp_n_send > 0 && n_census_remain > temp_n_send) {
+          if (temp_n_send > 0 &&
+              n_census_remain > static_cast<uint64_t>(temp_n_send)) {
             n_send_census = temp_n_send;
             start_cut_index = n_census_remain - n_send_census;
             n_census_remain -= n_send_census;

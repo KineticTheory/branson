@@ -193,7 +193,7 @@ int main (int argc, char *argv[]) {
     uint32_t cell_id, write_rank;
     for (uint32_t i=0; i<n_tally;++i) {
       write_rank = rank;
-      while(write_rank == rank) {
+      while(write_rank == static_cast<uint32_t>(rank)) {
         cell_id = uint32_t(rng->generate_random_number()*n_cell);
         write_rank = t_manager.get_off_rank_id(cell_id);
       }

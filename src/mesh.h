@@ -65,8 +65,8 @@ public:
     double dx, dy, dz;
 
     // make off processor map
-    for (uint32_t i = 0; i < n_off_rank; i++) {
-      int r_index = i + int(i >= rank);
+    for (uint32_t i = 0; i < static_cast<uint32_t>(n_off_rank); i++) {
+      int r_index = i + int(i >= static_cast<uint32_t>(rank));
       proc_map[i] = r_index;
     }
 

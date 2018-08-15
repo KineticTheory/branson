@@ -301,7 +301,7 @@ void exchange_cells_post_partitioning(const int rank, MPI_Types *mpi_types,
   }
 
   // receive sizes, ranks
-  for (uint32_t i = 0; i < n_donors; ++i) {
+  for (uint32_t i = 0; i < static_cast<uint32_t>(n_donors); ++i) {
     MPI_Irecv(&recv_from_rank[i], 1, MPI_UNSIGNED, MPI_ANY_SOURCE, 0,
               MPI_COMM_WORLD, &reqs[n_acceptors + i]);
   }
@@ -310,7 +310,7 @@ void exchange_cells_post_partitioning(const int rank, MPI_Types *mpi_types,
   MPI_Barrier(MPI_COMM_WORLD);
 
   // map donor rank to message size
-  for (uint32_t i = 0; i < n_donors; ++i)
+  for (uint32_t i = 0; i < static_cast<uint32_t>(n_donors); ++i)
     donor_rank_size[status[n_acceptors + i].MPI_SOURCE] = recv_from_rank[i];
 
   // now send the buffers and post receives
@@ -331,7 +331,7 @@ void exchange_cells_post_partitioning(const int rank, MPI_Types *mpi_types,
   MPI_Waitall(reqs.size(), &reqs[0], MPI_STATUS_IGNORE);
   MPI_Barrier(MPI_COMM_WORLD);
 
-  for (uint32_t i = 0; i < n_donors; ++i) {
+  for (uint32_t i = 0; i < static_cast<uint32_t>(n_donors); ++i) {
     vector<Cell> new_cells = recv_cell[i].get_object();
     for (uint32_t i = 0; i < new_cells.size(); ++i) {
       mesh->add_mesh_cell(new_cells[i]);
@@ -906,7 +906,7 @@ void remap_cell_and_grip_indices_staged(Mesh *mesh, const int rank,
 
     // ranks in the send block send to all
     if (rank >= send_ranks_start && rank < send_ranks_end) {
-      for (uint32_t i = 0; i < n_rank; ++i) {
+      for (uint32_t i = 0; i < static_cast<uint32_t>(n_rank); ++i) {
         // Send your packed index map
         MPI_Isend(&packed_map[0], n_boundary * 2, MPI_UNSIGNED, i, 0,
                   MPI_COMM_WORLD, &id_reqs[n_senders + i]);
@@ -918,7 +918,7 @@ void remap_cell_and_grip_indices_staged(Mesh *mesh, const int rank,
     }
 
     // receive block (for all ranks)
-    for (uint32_t i = 0; i < n_senders; ++i) {
+    for (uint32_t i = 0; i < static_cast<uint32_t>(n_senders); ++i) {
       int message_size = boundary_cell_size[send_ranks_start + i] * 2;
       int source_rank = send_ranks_start + i;
       // Receive other packed index maps
@@ -938,8 +938,8 @@ void remap_cell_and_grip_indices_staged(Mesh *mesh, const int rank,
 
     // remake the map objects from the packed maps and take boundary data from
     // them
-    for (uint32_t i = 0; i < n_senders; ++i) {
-      if (send_ranks_start + i == rank)
+    for (uint32_t i = 0; i < static_cast<uint32_t>(n_senders); ++i) {
+      if (send_ranks_start + i == static_cast<uint32_t>(rank))
         continue;
       vector<uint32_t> off_packed_map = recv_packed_maps[i].get_object();
       vector<uint32_t> off_packed_grip_map =
