@@ -18,7 +18,7 @@ macro(setupTPLs)
 
     message(STATUS "Looking for MPI...")
     find_package(MPI QUIET REQUIRED)
-    if( ${MPI_C_FOUND} )
+    if( MPI_C_FOUND )
       message(STATUS "Looking for MPI...${MPIEXEC}")
     else()
       message(STATUS "Looking for MPI...not found")
@@ -164,7 +164,7 @@ endif()
   else ()
     message(STATUS "Optional visualization libraries not loaded...skipping")
   endif ()
-
+  
 endmacro()
 
 #------------------------------------------------------------------------------#

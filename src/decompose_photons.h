@@ -13,8 +13,10 @@
 #define decompose_photons_h_
 
 #include <algorithm>
+#include <chrono>
 #include <iostream>
 #include <mpi.h>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 
@@ -36,13 +38,13 @@ void print_MPI_photons(const std::vector<Photon> &phtn_vec,
         phtn_vec[i].print_info(rank);
       cout.flush();
     }
-    usleep(100);
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
     MPI_Barrier(MPI_COMM_WORLD);
-    usleep(100);
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
   }
-  usleep(100);
+  std::this_thread::sleep_for(std::chrono::microseconds(100));
   cout.flush();
-  usleep(100);
+  std::this_thread::sleep_for(std::chrono::microseconds(100));
 }
 
 std::vector<Photon> rebalance_census(std::vector<Photon> &off_rank_census,

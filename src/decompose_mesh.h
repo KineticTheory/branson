@@ -13,10 +13,12 @@
 #define decompose_mesh_h_
 
 #include <algorithm>
+#include <chrono>
 #include <iostream>
 #include <mpi.h>
 #include <numeric>
 #include <parmetis.h>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -38,9 +40,11 @@ void print_MPI_out(Mesh *mesh, uint32_t rank, uint32_t size) {
       mesh->post_decomp_print();
       cout.flush();
     }
-    usleep(100);
+    // usleep(100); // microseconds
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
     MPI_Barrier(MPI_COMM_WORLD);
-    usleep(100);
+    // usleep(100);
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
   }
 }
 //----------------------------------------------------------------------------//
@@ -57,9 +61,9 @@ void print_MPI_maps(Mesh *mesh, uint32_t rank, uint32_t size) {
       mesh->print_map();
       cout.flush();
     }
-    usleep(100);
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
     MPI_Barrier(MPI_COMM_WORLD);
-    usleep(100);
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
   }
 }
 //----------------------------------------------------------------------------//
@@ -69,12 +73,12 @@ void print_MPI_maps(Mesh *mesh, uint32_t rank, uint32_t size) {
 std::vector<int> parmetis_partition(Mesh *mesh, int &edgecut, const int rank,
                                     const int n_rank) {
 
-  using Constants::X_POS;
-  using Constants::Y_POS;
-  using Constants::Z_POS;
   using Constants::X_NEG;
+  using Constants::X_POS;
   using Constants::Y_NEG;
+  using Constants::Y_POS;
   using Constants::Z_NEG;
+  using Constants::Z_POS;
   using std::vector;
 
   MPI_Comm comm;
@@ -151,7 +155,7 @@ std::vector<int> parmetis_partition(Mesh *mesh, int &edgecut, const int rank,
 
   float *ubvec = new float[ncon];
   for (int i = 0; i < ncon; ++i)
-    ubvec[i] = 1.05;
+    ubvec[i] = (float)1.05;
 
   int options[3];
   options[0] = 1;    // 0--use default values, 1--use the values in 1 and 2
@@ -343,14 +347,14 @@ void exchange_cells_post_partitioning(const int rank, MPI_Types *mpi_types,
 //----------------------------------------------------------------------------//
 //! Use metis to decompose on-rank mesh into chunks for better prefetching
 void overdecompose_mesh(Mesh *mesh, const uint32_t grip_size) {
+  using Constants::X_NEG;
+  using Constants::X_POS;
+  using Constants::Y_NEG;
+  using Constants::Y_POS;
+  using Constants::Z_NEG;
+  using Constants::Z_POS;
   using std::unordered_map;
   using std::vector;
-  using Constants::X_POS;
-  using Constants::Y_POS;
-  using Constants::Z_POS;
-  using Constants::X_NEG;
-  using Constants::Y_NEG;
-  using Constants::Z_NEG;
   // get post-decomposition number of cells on this rank
   uint32_t n_cell_on_rank = mesh->get_n_local_cells();
 
@@ -796,8 +800,8 @@ void remap_cell_and_grip_indices(Mesh *mesh, const int rank, const int n_rank) {
 //! Use two-sided communication to share new cell indices in mesh connectivity
 void remap_cell_and_grip_indices_staged(Mesh *mesh, const int rank,
                                         const int n_rank) {
-  using std::vector;
   using std::unordered_map;
+  using std::vector;
 
   // gather the number of cells on each processor
   uint32_t n_cell_post_decomp = mesh->get_n_local_cells();
@@ -977,10 +981,10 @@ void remap_cell_and_grip_indices_staged(Mesh *mesh, const int rank,
 // mesh and communicate renumbering
 void decompose_mesh(Mesh *mesh, MPI_Types *mpi_types, const Info &mpi_info,
                     const uint32_t &grip_size, const int decomposition_type) {
-  using std::unordered_map;
-  using std::unordered_set;
   using Constants::CUBE;
   using Constants::PARMETIS;
+  using std::unordered_map;
+  using std::unordered_set;
   Timer t_partition;
   Timer t_overdecomp;
   Timer t_remap;
@@ -1049,16 +1053,16 @@ void decompose_mesh(Mesh *mesh, MPI_Types *mpi_types, const Info &mpi_info,
 // mesh and communicate renumbering
 void replicate_mesh(Mesh *mesh, MPI_Types *mpi_types, const Info &mpi_info,
                     const uint32_t &grip_size) {
-  using Constants::X_POS;
-  using Constants::Y_POS;
-  using Constants::Z_POS;
   using Constants::X_NEG;
+  using Constants::X_POS;
   using Constants::Y_NEG;
+  using Constants::Y_POS;
   using Constants::Z_NEG;
-  using std::vector;
+  using Constants::Z_POS;
+  using std::partial_sum;
   using std::unordered_map;
   using std::unordered_set;
-  using std::partial_sum;
+  using std::vector;
 
   int rank = mpi_info.get_rank();
   int n_rank = mpi_info.get_n_rank();

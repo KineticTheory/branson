@@ -38,6 +38,8 @@ else ()
 endif()
 set(BRANSON_N_GROUPS "1" CACHE STRING "Number of energy groups." FORCE)
 
+option(BRANSON_QUIET_BUILD "Suppress build warnings" ON)
+
 #------------------------------------------------------------------------------#
 # Record the site name
 
@@ -71,9 +73,19 @@ endif ()
 
 # add compiler flags
 if( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" )
-  set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+  if( NOT BRANSON_QUIET_BUILD )
+    set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+  endif()
 elseif( CMAKE_CXX_COMPILER_ID STREQUAL "Intel" )
-  set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+  if( NOT BRANSON_QUIET_BUILD )
+    set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+  endif()
+elseif( CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" )
+  message( FATAL_ERROR 
+"As of version 9.0, MS-MPI doesn't provide the required function 'MPI_Win_lock_all'.")
+  if( BRANSON_QUIET_BUILD )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267 /wd4305")
+  endif()
 endif()
 
 #------------------------------------------------------------------------------#
@@ -132,6 +144,7 @@ target_include_directories( BRANSON PRIVATE
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}> )
 set( branson_deps
   ParMETIS::parmetis
+  Boost::boost
   MPI::MPI_CXX
   MPI::MPI_C
   METIS::metis )
